@@ -1,0 +1,61 @@
+[gd_scene load_steps=8 format=3 uid="uid://cb4exo8inv87c"]
+
+[ext_resource type="Script" path="res://Assets/Scripts/game_manager.gd" id="1_mbqdb"]
+[ext_resource type="PackedScene" uid="uid://cv8vjorwulrfe" path="res://Assets/Scenes/ball.tscn" id="1_smeuj"]
+[ext_resource type="Texture2D" uid="uid://c05mt1ua5xe6s" path="res://Assets/Source/arts/Board.png" id="2_0x4w8"]
+[ext_resource type="PackedScene" uid="uid://bpttugesnk7y4" path="res://Assets/Scenes/player.tscn" id="4_sfbhv"]
+[ext_resource type="PackedScene" uid="uid://b6hiurdrdeqj" path="res://Assets/Scenes/game_ui.tscn" id="5_81u8c"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_xpnhr"]
+size = Vector2(1258.25, 19)
+
+[sub_resource type="SegmentShape2D" id="SegmentShape2D_rqc8q"]
+a = Vector2(0, 338.5)
+b = Vector2(0, -338.5)
+
+[node name="Pong" type="Node2D"]
+script = ExtResource("1_mbqdb")
+objetive_points = 1
+
+[node name="Board" type="Sprite2D" parent="."]
+scale = Vector2(1.59601, 1.58242)
+texture = ExtResource("2_0x4w8")
+centered = false
+
+[node name="TopWall" type="StaticBody2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="TopWall"]
+position = Vector2(630, 61)
+shape = SubResource("RectangleShape2D_xpnhr")
+
+[node name="BottomWall" type="StaticBody2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="BottomWall"]
+position = Vector2(626.875, 708)
+shape = SubResource("RectangleShape2D_xpnhr")
+
+[node name="GoalEnemy" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="GoalEnemy"]
+position = Vector2(0, 357.5)
+shape = SubResource("SegmentShape2D_rqc8q")
+
+[node name="GoalPlayer" type="Area2D" parent="."]
+position = Vector2(1271, 0)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="GoalPlayer"]
+position = Vector2(0, 357.5)
+shape = SubResource("SegmentShape2D_rqc8q")
+
+[node name="Ball" parent="." instance=ExtResource("1_smeuj")]
+position = Vector2(640, 360)
+
+[node name="Player" parent="." instance=ExtResource("4_sfbhv")]
+position = Vector2(33, 240)
+
+[node name="Game_UI" parent="." instance=ExtResource("5_81u8c")]
+offset_right = 1280.0
+offset_bottom = 720.0
+
+[connection signal="body_entered" from="GoalEnemy" to="." method="_on_goal_enemy_body_entered"]
+[connection signal="body_entered" from="GoalPlayer" to="." method="_on_goal_player_body_entered"]
