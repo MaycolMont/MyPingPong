@@ -8,7 +8,7 @@
 
 [node name="Pong" type="Node2D"]
 script = ExtResource("1_mbqdb")
-max_points = 1
+objetive_points = 1
 
 [node name="Field" parent="." instance=ExtResource("2_d3n03")]
 position = Vector2(0, 50)
@@ -24,6 +24,4 @@ position = Vector2(33, 240)
 offset_right = 1280.0
 offset_bottom = 720.0
 
-[connection signal="paused" from="." to="." method="_on_pause"]
 [connection signal="goal" from="Field" to="." method="_on_field_goal"]
-[connection signal="max_point_reached" from="Game_UI" to="." method="_on_over_game"]

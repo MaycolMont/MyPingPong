@@ -2,7 +2,6 @@ extends CharacterBody2D
 
 @export var SPEED = 300.0
 @export var to_flip = false
-@export var active = true
 
 func _ready():
 	if to_flip:
@@ -11,8 +10,7 @@ func _ready():
 func _process(delta):
 	# Get the input direction and handle the movement/deceleration.
 	# As good practice, you should replace UI actions with custom gameplay actions.
-	if active: 
-		handle_input()
+	handle_input()
 
 	move_and_collide(velocity * delta)
 
