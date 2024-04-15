@@ -61,7 +61,5 @@ func rand_velocity_direction():
 func _on_timer_timeout():
 	# increase speed timer
 	current_velocity *= multiplier_velocity
-	print_debug('velocity increased: ' + str(current_velocity))
 	if current_velocity >= max_velocity:
 		$Timer.stop()
-		print_debug('max velocity reached')
