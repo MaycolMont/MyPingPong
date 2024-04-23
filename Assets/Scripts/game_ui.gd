@@ -7,29 +7,36 @@ signal max_point_reached(winner_name: String)
 @onready var alert_label = $AlertLabel
 var max_points: int
 
-func _on_ready():
-	player_score.label = 'Player'
-	enemy_score.label = 'Computer'
+func _ready():
 	alert_label.visible = false
 
-func add_point(object_name: String):
+# ===================== PUBLIC METHODS ========================
+
+func add_point(object_name: String) -> void:
 	var label_score = player_score if object_name == player_score.label else enemy_score
-	process_points(label_score, object_name)
+	_process_points(label_score)
 
-func process_points(label_score: LabelScore, text_label: String):
-	label_score.add_point()
-	if label_score.score == max_points:
-		max_point_reached.emit(label_score.label)
+func restart() -> void:
+	hide_alert()
+	player_score.score = 0
+	enemy_score.score = 0
 
-func show_alert(msg: String):
+func show_alert(msg: String) -> void:
 	alert_label.text = msg
 	alert_label.visible = true
 
-func hide_alert():
+func hide_alert() -> void:
 	alert_label.text = ''
 	alert_label.visible = false
 
-func restart():
-	hide_alert()
-	player_score.restart()
-	enemy_score.restart()
+func show_temp_label(msg: String, time: float = 1) -> void:
+	$TempLabel.show_label(msg, time)
+
+
+
+# ===================== PRIVATE METHODS ========================
+
+func _process_points(label_score: LabelScore):
+	label_score.score += 1
+	if label_score.score == max_points:
+		max_point_reached.emit(label_score.label)

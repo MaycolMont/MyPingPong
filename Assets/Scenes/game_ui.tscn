@@ -1,9 +1,10 @@
-[gd_scene load_steps=6 format=3 uid="uid://b6hiurdrdeqj"]
+[gd_scene load_steps=7 format=3 uid="uid://b6hiurdrdeqj"]
 
 [ext_resource type="Texture2D" uid="uid://bx2c2nqvs4pp3" path="res://Assets/Source/arts/ScoreBar.png" id="1_tragr"]
 [ext_resource type="FontFile" uid="uid://70qbtv1b7jqy" path="res://Assets/Source/fonts/Teko-VariableFont_wght.ttf" id="1_yqiak"]
 [ext_resource type="Script" path="res://Assets/Scripts/game_ui.gd" id="2_onxhg"]
 [ext_resource type="Script" path="res://Assets/Scripts/score_objet.gd" id="4_cnttu"]
+[ext_resource type="Script" path="res://Assets/Scripts/temp_label.gd" id="5_j42lf"]
 
 [sub_resource type="Theme" id="Theme_fi2sd"]
 default_font = ExtResource("1_yqiak")
@@ -52,6 +53,7 @@ offset_right = 0.5
 offset_bottom = 11.5
 grow_horizontal = 2
 grow_vertical = 2
+text = "Player"
 script = ExtResource("4_cnttu")
 
 [node name="EnemyScorePanel" type="TextureRect" parent="Panel/HBoxContainer2"]
@@ -71,6 +73,7 @@ offset_right = 0.5
 offset_bottom = 11.5
 grow_horizontal = 2
 grow_vertical = 2
+text = "Enemy"
 script = ExtResource("4_cnttu")
 
 [node name="AlertLabel" type="Label" parent="."]
@@ -86,3 +89,20 @@ offset_right = 20.0
 offset_bottom = 22.0
 grow_horizontal = 2
 grow_vertical = 2
+
+[node name="TempLabel" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -0.5
+offset_top = 100.0
+offset_right = 0.5
+offset_bottom = 144.0
+grow_horizontal = 2
+script = ExtResource("5_j42lf")
+
+[node name="ShowAlertTimer" type="Timer" parent="TempLabel"]
+one_shot = true
+
+[connection signal="timeout" from="TempLabel/ShowAlertTimer" to="TempLabel" method="_on_show_alert_timer_timeout"]

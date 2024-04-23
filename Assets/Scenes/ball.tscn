@@ -1,11 +1,102 @@
-[gd_scene load_steps=5 format=3 uid="uid://cv8vjorwulrfe"]
+[gd_scene load_steps=10 format=3 uid="uid://cv8vjorwulrfe"]
 
 [ext_resource type="Script" path="res://Assets/Scripts/ball.gd" id="1_ssyo5"]
 [ext_resource type="Texture2D" uid="uid://y0obho0lbfap" path="res://Assets/Source/arts/Ball.png" id="2_8adix"]
 [ext_resource type="Texture2D" uid="uid://bvxmmk8jequ5" path="res://Assets/Source/arts/BallMotion.png" id="3_njbg6"]
+[ext_resource type="AudioStream" uid="uid://qc7uwb437g1f" path="res://Assets/Source/audio/thump.mp3" id="4_hdyjr"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_tc75o"]
 radius = 15.0333
+
+[sub_resource type="GDScript" id="GDScript_ft7a5"]
+resource_name = "state_machine"
+script/source = "extends StateMachine
+
+@export var ball : CharacterBody2D
+
+func _ready():
+	for state in get_children():
+		state.ball = ball
+	current_state.enter()
+"
+
+[sub_resource type="GDScript" id="GDScript_gao3j"]
+resource_name = "appear_state"
+script/source = "extends BallState
+
+@export var serve_state : BallState
+@onready var throw_timer = $ThrowTimer
+
+func enter():
+	current_velocity = 0
+	throw_timer.start()
+	
+func _on_throw_timer_timeout():
+	next_state = serve_state
+"
+
+[sub_resource type="GDScript" id="GDScript_amffa"]
+resource_name = "serve_state"
+script/source = "extends BallState
+
+@export var bounce_state : BallState
+
+func enter():
+	current_velocity = 500
+	ball.velocity = _rand_vector2()
+	if ball.throw_to_left:
+		ball.velocity.x *= -1
+
+func handle_collision(collider):
+	if collider is CharacterBody2D:
+		next_state = bounce_state
+	elif collider is StaticBody2D:
+		ball.velocity.y *= -1
+
+func _rand_vector2(angle_range: float = PI / 6) -> Vector2:
+	var angle = randf_range(-angle_range, angle_range)
+	return Vector2(cos(angle), sin(angle))
+"
+
+[sub_resource type="GDScript" id="GDScript_q40w1"]
+resource_name = "bounce_state"
+script/source = "extends BallState
+
+@onready var increase_velocity_timer = $IncreaseVelocityTimer
+
+@export var initial_velocity: float = 700
+@export var max_velocity: float = 900
+@export var velocity_timer: float = 3
+@export var multiplier_velocity: float = 1.05
+
+func enter():
+	current_velocity = initial_velocity
+	increase_velocity_timer.start(velocity_timer)
+
+func exit():
+	increase_velocity_timer.stop()
+	
+func handle_collision(collider):
+	if collider is CharacterBody2D:
+		_change_bounce_direction(collider.velocity.y)
+	elif collider is StaticBody2D:
+		ball.velocity.y *= -1
+
+func _change_bounce_direction(collider_velocity: int) -> void:
+	var angle_range = PI / 12 # 15 deg
+	ball.velocity.x *= -1
+	if collider_velocity > 0:
+		ball.velocity = ball.velocity.rotated(angle_range)
+	elif collider_velocity < 0:
+		ball.velocity = ball.velocity.rotated(-angle_range)
+
+func _on_increase_velocity_timer_timeout():
+	if current_velocity < max_velocity:
+		current_velocity *= multiplier_velocity
+		ball.velocity_increased.emit()
+	else:
+		increase_velocity_timer.stop()
+"
 
 [node name="Ball" type="CharacterBody2D"]
 script = ExtResource("1_ssyo5")
@@ -14,6 +105,7 @@ script = ExtResource("1_ssyo5")
 texture = ExtResource("2_8adix")
 
 [node name="BallMotion" type="Sprite2D" parent="."]
+visible = false
 position = Vector2(-43, 0)
 rotation = -0.785398
 texture = ExtResource("3_njbg6")
@@ -22,6 +114,29 @@ flip_v = true
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("CircleShape2D_tc75o")
 
-[node name="Timer" type="Timer" parent="."]
+[node name="BounceAudio" type="AudioStreamPlayer2D" parent="."]
+stream = ExtResource("4_hdyjr")
 
-[connection signal="timeout" from="Timer" to="." method="_on_timer_timeout"]
+[node name="StateMachine" type="Node" parent="." node_paths=PackedStringArray("ball", "current_state")]
+script = SubResource("GDScript_ft7a5")
+ball = NodePath("..")
+current_state = NodePath("AppearState")
+
+[node name="AppearState" type="Node" parent="StateMachine" node_paths=PackedStringArray("serve_state")]
+script = SubResource("GDScript_gao3j")
+serve_state = NodePath("../ServeState")
+
+[node name="ThrowTimer" type="Timer" parent="StateMachine/AppearState"]
+one_shot = true
+
+[node name="ServeState" type="Node" parent="StateMachine" node_paths=PackedStringArray("bounce_state")]
+script = SubResource("GDScript_amffa")
+bounce_state = NodePath("../BounceState")
+
+[node name="BounceState" type="Node" parent="StateMachine"]
+script = SubResource("GDScript_q40w1")
+
+[node name="IncreaseVelocityTimer" type="Timer" parent="StateMachine/BounceState"]
+
+[connection signal="timeout" from="StateMachine/AppearState/ThrowTimer" to="StateMachine/AppearState" method="_on_throw_timer_timeout"]
+[connection signal="timeout" from="StateMachine/BounceState/IncreaseVelocityTimer" to="StateMachine/BounceState" method="_on_increase_velocity_timer_timeout"]

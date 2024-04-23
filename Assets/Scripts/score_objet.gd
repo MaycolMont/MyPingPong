@@ -1,16 +1,11 @@
+class_name LabelScore
 extends Label
 
-class_name LabelScore
+var score: int = 0
+var label: String
 
-@onready var score: int = 0
-@onready var label: String
+func _ready():
+	label = text
 
-func _on_ready():
-	text = label
-
-func add_point():
-	score += 1
+func _process(_delta):
 	text = label + ': ' + str(score)
-
-func restart():
-	score = 0

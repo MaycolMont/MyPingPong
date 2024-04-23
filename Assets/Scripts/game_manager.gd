@@ -1,56 +1,76 @@
 extends Node2D
 
-signal paused
 
-var is_paused := false
+# ===================== VARIABLES ========================
+
+@export var max_points: int = 10
+
+var is_paused := false:
+	set = _set_is_pause
+	
+@export var ball_scene : PackedScene
+@export var player_scene : PackedScene
 
 @onready var ball := $Ball
 @onready var UI = $Game_UI
-@export var max_points: int = 10
+
+
+
+# ===================== BUILT-IN METHODS ========================
 
 func _ready():
-	_on_start_game()
+	_start_game()
 
 func _process(_delta):
-	handle_inputs()
+	_handle_inputs()
 
-func restart_ball():
-	ball.position = Vector2(640, 360)
-	ball.throw('left')
 
-func handle_inputs():
+
+# ===================== PRIVATE METHODS ========================
+
+func _handle_inputs() -> void:
 	if Input.is_action_just_pressed("Quit"):
-		get_tree().quit()
+		get_tree().quit()# salir de la ventana
 	elif Input.is_action_just_pressed("Pause"):
-		paused.emit()
+		is_paused = not is_paused ## activa la función set_is_pause
+	elif Input.is_action_just_pressed("Restart"):
+		_restart_game()
 
-func _on_start_game():
-	UI.max_points = max_points
-	ball.throw('left')
-
-func _on_over_game(winner_name: String) -> void:
-	ball.queue_free()
-	UI.show_alert(winner_name + ' Won')
-	set_game_process(false)
-
-func set_game_process(value: bool):
-	for child in get_children():
-		child.set_process(value)
-
-# añadir manejo de juego tem
-func _on_field_goal(area: Area2D):
-	if area.name == 'PlayerGoal':
-		UI.add_point('Player')
-	else:
-		UI.add_point('Enemy')
-
-	restart_ball()
-
-func _on_pause():
-	is_paused = not is_paused
+func _set_is_pause(value: bool) -> void:
+	is_paused = value
 	if is_paused:
 		UI.show_alert('Pausa')
 	else:
 		UI.hide_alert()
 
 	set_game_process(not is_paused)
+
+func _start_game() -> void:
+	UI.max_points = max_points
+	ball.throw(Vector2(640, 360))
+
+func set_game_process(value: bool) -> void:
+	for child in get_children():
+		child.set_process(value)
+
+func _restart_game():
+	ball.throw(Vector2(640, 360))
+	UI.restart()
+
+# ===================== SIGNAL CALLBACKS ========================
+
+func _on_over_game(winner_name: String):
+	ball.visible = false
+	UI.show_alert(winner_name + ' Won')
+	set_game_process(false)
+
+func _on_field_goal(area: Area2D):
+	if area.name == 'PlayerGoal':
+		UI.add_point('Enemy')
+	else:
+		UI.add_point('Player')
+
+	ball.throw(Vector2(640, 360))
+
+func _on_ball_velocity_increased():
+	UI.show_temp_label('x1.05', 2)

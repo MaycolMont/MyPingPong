@@ -1,0 +1,10 @@
+[gd_scene load_steps=4 format=3 uid="uid://d1wf65yxtd7t8"]
+
+[ext_resource type="Script" path="res://test_scene.gd" id="1_4kykg"]
+[ext_resource type="PackedScene" uid="uid://cv8vjorwulrfe" path="res://Assets/Scenes/ball.tscn" id="2_fhceg"]
+[ext_resource type="PackedScene" uid="uid://bpttugesnk7y4" path="res://Assets/Scenes/player.tscn" id="3_g3go1"]
+
+[node name="TestScene" type="Node"]
+script = ExtResource("1_4kykg")
+ball_scene = ExtResource("2_fhceg")
+player_scene = ExtResource("3_g3go1")
